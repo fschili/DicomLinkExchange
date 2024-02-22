@@ -1,0 +1,226 @@
+openapi: 3.0.0
+
+info:
+  title: COMID API
+  description: COMID stands for CO mmon M edical I mage D ownload. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
+  version: 0.0.2
+
+servers:
+  - url: https://localhost:8080/v1
+    description: Demo server
+    
+paths:
+  /login:
+    description: the initial login process which uses HTTP basic auth. The username / password could be the user code and birth date.
+    get:    
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: response with valid JWT or, if /logintfa is required, preliminary JWT for further authentication
+          content:
+            application/jwt:
+              schema:
+                type: string        
+        "401":
+          description: invalid credentials provided
+
+  /api-info:
+    description: provides information on implemented capabilities of the api which is important to know for the caller
+    get:    
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: a json string representing information on the api
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiInfo' 
+        "401":
+          $ref: '#/components/responses/invalidCredentialsFirstStage'   
+
+  /logintfa:
+    description: must be called if /api-info provides tfaNeeded = true. Will return a new jwt if the second factor is valid
+    post:
+      security:
+        - bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tfa'
+        required: true
+      responses:
+        "200":
+          description: a new JWT for all subsequent calls
+          content:
+            application/jwt:
+              schema:
+                type: string        
+        "401":
+          $ref: '#/components/responses/invalidCredentialsFirstStage'   
+
+  /studies:
+    description:  The following call can be used to retrieve the content of an account at study level via a JSON schema to be defined
+    get:
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: a list of study descriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/studyList'    
+        "401":
+          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+
+  /download/study/{studyInstanceUID}:
+    description:  Downloads the study for the given studyInstanceUID as zip file
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/studyInstanceUIDParam"
+      responses:
+        "200":
+          description: All relevant (DICOM) files of the study contained in a zip file stream
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+        "503":
+          $ref: '#/components/responses/comebackLater'       
+        "400":
+          $ref: '#/components/responses/invalidStudyInstanceUID'        
+
+  /download/report/{studyInstanceUID}:
+    description:  Downloads only the report(s) for the given study (denoted by its studyInstanceUID) as zip file
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/studyInstanceUIDParam"
+      responses:
+        "200":
+          description: The report files of the study contained in a zip file stream
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+        "503":
+          $ref: '#/components/responses/comebackLater'      
+        "400":
+          $ref: '#/components/responses/invalidStudyInstanceUID'        
+
+  /download/all:
+    description: download all studies and reports of an account
+    get:
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: All image and report files of all studies of the account contained in a zip file stream
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+        "503":
+          $ref: '#/components/responses/comebackLater'       
+
+components:
+
+  securitySchemes:
+
+    basicAuth:     # <-- arbitrary name for the security scheme
+      type: http
+      scheme: basic
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # optional, for documentation purposes only
+
+  schemas:
+
+    apiInfo:
+      type: object
+      properties:
+        tfaNeeded:
+          type: boolean
+        tfaDescription:
+          type: string
+        hasEncryptedZipContents:
+          type: boolean
+        encryptedZipContentsDescription:
+          type: string
+
+    tfa:
+      type: object
+      properties:
+        tfaValue:
+          type: string
+          
+    studyDescription:
+      type: object
+      properties:
+        studyInstanceUID:
+          type: string
+          minLength: 1
+        name:
+          type: string
+        datetime:
+          type: string
+          format: date-time   
+        reportAvailable:
+          type: boolean 
+
+    studyList:
+      type: array
+      items:
+        $ref: '#/components/schemas/studyDescription'
+
+    comebackLaterResponse:
+      type: object  
+      nullable: true
+      properties: 
+        timeOutInSeconds:
+          type: integer
+          minimum: 0
+
+  parameters:
+    studyInstanceUIDParam:
+      name: studyInstanceUID
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+
+  responses:
+    invalidCredentialsFirstStage:
+          description: invalid credentials provided (use /login before)
+
+    invalidCredentialsSecondStage:
+          description: invalid credentials provided - use /login (and possibly /logintfa) before
+
+    comebackLater:
+        description: If the server is busy, a 503 status code means "please come back later"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/comebackLaterResponse'      
+
+    invalidStudyInstanceUID:
+        description: If the study or report for the given StudyInstanceUID is unknown
