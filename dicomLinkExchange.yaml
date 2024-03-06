@@ -62,8 +62,8 @@ paths:
         "401":
           $ref: '#/components/responses/invalidCredentialsFirstStage'   
 
-  /studies:
-    description:  The following call can be used to retrieve the content of an account at study level via a JSON schema to be defined
+  /list:
+    description:  Returns a list of the metadata of all available medical data sets 
     get:
       security:
         - bearerAuth: []
@@ -73,11 +73,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/studyList'    
+                $ref: '#/components/schemas/dataList'    
         "401":
           $ref: '#/components/responses/invalidCredentialsSecondStage'     
 
-  /download/study/{studyInstanceUID}:
+  /download/{uid}:
     description:  Downloads the study for the given studyInstanceUID as zip file
     get:
       security:
@@ -99,7 +99,7 @@ paths:
         "400":
           $ref: '#/components/responses/invalidStudyInstanceUID'        
 
-  /download/report/{studyInstanceUID}:
+  /download/report/{uid}:
     description:  Downloads only the report(s) for the given study (denoted by its studyInstanceUID) as zip file
     get:
       security:
@@ -172,24 +172,40 @@ components:
         tfaValue:
           type: string
           
-    studyDescription:
+    dataItem:
       type: object
+      required:
+        - mimeType
+        - uid
+        - dataDescription
       properties:
-        studyInstanceUID:
+        mimeType:           # application/dicom, application/pdf, ...
           type: string
-          minLength: 1
-        name:
+        uid:                # dicom: studyInstanceUID (0020,000D)
           type: string
-        datetime:
+        dataDescription:    # dicom: studyDescription (0008,1030)
           type: string
-          format: date-time   
+        date:               # dicom: studyDate (0008,0020)
+          type: string
+          format: date   
+        modalities:         
+          type: string  
+        patientsSex:        # dicom: patientsSex (0010,0040)
+          type: string   
+        patientsName:       # dicom: patientsName (0010,0010)
+          type: string
+        patientsBirthdate:  # dicom: patientsBirthdate (0010,0030)
+          type: string 
+          format: date
+        fileCount:
+          type: integer 
         reportAvailable:
-          type: boolean 
+          type: boolean
 
-    studyList:
+    dataList:
       type: array
       items:
-        $ref: '#/components/schemas/studyDescription'
+        $ref: '#/components/schemas/dataItem'
 
     comebackLaterResponse:
       type: object  
