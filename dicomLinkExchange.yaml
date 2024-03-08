@@ -1,8 +1,8 @@
 openapi: 3.0.0
 
 info:
-  title: COMID API
-  description: COMID stands for CO mmon M edical I mage D ownload. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
+  title: dlx API
+  description: Prototype of the DICOM Link Exchange (dlx) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
   version: 0.0.2
 
 servers:
@@ -217,7 +217,7 @@ components:
 
   parameters:
     studyInstanceUIDParam:
-      name: studyInstanceUID
+      name: uid
       in: path
       required: true
       schema:
