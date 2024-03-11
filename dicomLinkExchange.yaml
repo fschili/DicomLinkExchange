@@ -1,15 +1,37 @@
 openapi: 3.0.0
 
 info:
-  title: dlx API
-  description: Prototype of the DICOM Link Exchange (dlx) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.0.2
+  title: DLX API
+  description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
+  version: 0.0.3
 
 servers:
-  - url: https://localhost:8080/v1
+  - url: /
     description: Demo server
     
 paths:
+  /token/{id}:
+    description: the initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests
+    get:
+      parameters:
+        - in: path
+          name: id
+          description: Token which identifies the download package
+          required: true
+          schema:
+            type: string 
+      responses:
+        "200":
+          description: Returns the 2FA questions in JSON format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tfaQuestions'
+        "404":
+          description: Token does not exist or is invalide
+        "5XX":
+          description: Unexpected server error
+
   /login:
     description: the initial login process which uses HTTP basic auth. The username / password could be the user code and birth date.
     get:    
@@ -153,6 +175,22 @@ components:
       bearerFormat: JWT  # optional, for documentation purposes only
 
   schemas:
+
+    tfaQuestions:
+      type: array
+      items:
+        type: object
+        properties:
+          question:
+            type: string
+          answerFormat:  
+            type: string
+            enum: [date, string, int]
+            description: |
+              Format:
+              * `date` - date formated as YYYYMMDD
+              * `string` - arbitrary string
+              * `int` - Integer number
 
     apiInfo:
       type: object
