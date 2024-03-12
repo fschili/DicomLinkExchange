@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.0.3
+  version: 0.9
 
 servers:
   - url: /
@@ -183,14 +183,22 @@ components:
         properties:
           question:
             type: string
+          questionType:
+            type: string
+            enum: [PAT_BIRTH_DATE, STUDY_DATE, KV_NUMBER, CUSTOM]
+            description: |
+              Format:
+              * `PAT_BIRTH_DATE` - e.g. date from DICOM TAG 0010:0030
+              * `STUDY_DATE` - e.g. date from DICOM TAGS 0008:0020
+              * `KV_NUMBER` - as string
+              * `CUSTOM` - any custom value which is not specified above        
           answerFormat:  
             type: string
-            enum: [date, string, int]
+            enum: [date, string]
             description: |
               Format:
               * `date` - date formated as YYYYMMDD
               * `string` - arbitrary string
-              * `int` - Integer number
 
     apiInfo:
       type: object
