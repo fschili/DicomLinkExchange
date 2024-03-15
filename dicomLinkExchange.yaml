@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.9
+  version: 0.0.3
 
 servers:
   - url: /
@@ -31,21 +31,36 @@ paths:
           description: Token does not exist or is invalide
         "5XX":
           description: Unexpected server error
-
-  /login:
-    description: the initial login process which uses HTTP basic auth. The username / password could be the user code and birth date.
-    get:    
-      security:
-        - basicAuth: []
+          
+  /tokentfa/{id}:
+    description: request to answer the 2FA questions from the initial token call. 
+    post:
+      parameters:
+        - in: path
+          name: id
+          description: Token which identifies the download package
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tfaAnswers'
+        required: true    
       responses:
         "200":
-          description: response with valid JWT or, if /logintfa is required, preliminary JWT for further authentication
+          description: response with valid JWT 
           content:
             application/jwt:
               schema:
-                type: string        
+                type: string      
+        "404":
+          description: Token does not exist or is invalide
         "401":
-          description: invalid credentials provided
+          description: Invalid credentials provided
+        "5XX":
+          description: Unexpected server error
 
   /api-info:
     description: provides information on implemented capabilities of the api which is important to know for the caller
@@ -60,29 +75,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/apiInfo' 
         "401":
-          $ref: '#/components/responses/invalidCredentialsFirstStage'   
-
-  /logintfa:
-    description: must be called if /api-info provides tfaNeeded = true. Will return a new jwt if the second factor is valid
-    post:
-      security:
-        - bearerAuth: []
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/tfa'
-        required: true
-      responses:
-        "200":
-          description: a new JWT for all subsequent calls
-          content:
-            application/jwt:
-              schema:
-                type: string        
-        "401":
-          $ref: '#/components/responses/invalidCredentialsFirstStage'   
+          $ref: '#/components/responses/invalidCredentials'   
 
   /list:
     description:  Returns a list of the metadata of all available medical data sets 
@@ -97,7 +90,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/dataList'    
         "401":
-          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+          $ref: '#/components/responses/invalidCredentials'     
 
   /download/{uid}:
     description:  Downloads the study for the given studyInstanceUID as zip file
@@ -115,7 +108,7 @@ paths:
                 type: string
                 format: binary
         "401":
-          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+          $ref: '#/components/responses/invalidCredentials'     
         "503":
           $ref: '#/components/responses/comebackLater'       
         "400":
@@ -183,6 +176,8 @@ components:
         properties:
           question:
             type: string
+          questionId:
+            type: string
           questionType:
             type: string
             enum: [PAT_BIRTH_DATE, STUDY_DATE, KV_NUMBER, CUSTOM]
@@ -194,11 +189,21 @@ components:
               * `CUSTOM` - any custom value which is not specified above        
           answerFormat:  
             type: string
-            enum: [date, string]
+            enum: [DATE, STRING]
             description: |
               Format:
-              * `date` - date formated as YYYYMMDD
-              * `string` - arbitrary string
+              * `DATE` - date formated as YYYYMMDD
+              * `STRING` - arbitrary string
+    
+    tfaAnswers:
+      type: array
+      items:
+        type: object
+        properties:
+          questionId:
+            type: string
+          answer:
+            type: string
 
     apiInfo:
       type: object
@@ -210,12 +215,6 @@ components:
         hasEncryptedZipContents:
           type: boolean
         encryptedZipContentsDescription:
-          type: string
-
-    tfa:
-      type: object
-      properties:
-        tfaValue:
           type: string
           
     dataItem:
@@ -271,11 +270,8 @@ components:
         minLength: 1
 
   responses:
-    invalidCredentialsFirstStage:
-          description: invalid credentials provided (use /login before)
-
-    invalidCredentialsSecondStage:
-          description: invalid credentials provided - use /login (and possibly /logintfa) before
+    invalidCredentials:
+          description: invalid credentials provided - use /token (and possibly /tokentfa) before
 
     comebackLater:
         description: If the server is busy, a 503 status code means "please come back later"
