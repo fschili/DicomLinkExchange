@@ -130,7 +130,7 @@ paths:
                 type: string
                 format: binary
         "401":
-          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+          $ref: '#/components/responses/invalidCredentials'     
         "503":
           $ref: '#/components/responses/comebackLater'      
         "400":
@@ -150,7 +150,7 @@ paths:
                 type: string
                 format: binary
         "401":
-          $ref: '#/components/responses/invalidCredentialsSecondStage'     
+          $ref: '#/components/responses/invalidCredentials'     
         "503":
           $ref: '#/components/responses/comebackLater'       
 
