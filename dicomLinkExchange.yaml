@@ -3,15 +3,26 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.0.3
+  version: 0.9
 
 servers:
-  - url: /
+  - url: /dlx/
     description: Demo server
     
 paths:
+  /api_info:
+    description: Provides information on version and implemented capabilities of the api
+    get:    
+      responses:
+        "200":
+          description: A json string representing information about the api
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiInfo'
+
   /token/{id}:
-    description: the initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests
+    description: Ihe initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests
     get:
       parameters:
         - in: path
@@ -33,7 +44,7 @@ paths:
           description: Unexpected server error
           
   /tokentfa/{id}:
-    description: request to answer the 2FA questions from the initial token call. 
+    description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their IDs. 
     post:
       parameters:
         - in: path
@@ -55,27 +66,10 @@ paths:
             application/jwt:
               schema:
                 type: string      
-        "404":
-          description: Token does not exist or is invalide
-        "401":
-          description: Invalid credentials provided
+        "403":
+          description: Token does not exist, is invalide or credentials are wrong
         "5XX":
           description: Unexpected server error
-
-  /api-info:
-    description: provides information on implemented capabilities of the api which is important to know for the caller
-    get:    
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: a json string representing information on the api
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/apiInfo' 
-        "401":
-          $ref: '#/components/responses/invalidCredentials'   
 
   /list:
     description:  Returns a list of the metadata of all available medical data sets 
@@ -168,6 +162,16 @@ components:
       bearerFormat: JWT  # optional, for documentation purposes only
 
   schemas:
+      
+    apiInfo:
+        type: object
+        required:
+          - dlxVersion
+        properties:
+          dlxVersion:
+            type: string
+          vendorInformation:
+            type: string
 
     tfaQuestions:
       type: array
@@ -204,18 +208,6 @@ components:
             type: string
           answer:
             type: string
-
-    apiInfo:
-      type: object
-      properties:
-        tfaNeeded:
-          type: boolean
-        tfaDescription:
-          type: string
-        hasEncryptedZipContents:
-          type: boolean
-        encryptedZipContentsDescription:
-          type: string
           
     dataItem:
       type: object
