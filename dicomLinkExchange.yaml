@@ -78,7 +78,7 @@ paths:
         - bearerAuth: []
       responses:
         "200":
-          description: a list of study descriptions
+          description: A list of medical data items
           content:
             application/json:
               schema:
@@ -86,18 +86,18 @@ paths:
         "401":
           $ref: '#/components/responses/invalidCredentials'     
 
-  /download/{uid}:
-    description:  Downloads the study for the given studyInstanceUID as zip file
+  /download/{id}:
+    description: Downloads the file(s) of the data item for the given id
     get:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/studyInstanceUIDParam"
+        - $ref: "#/components/parameters/idParam"
       responses:
         "200":
-          description: All relevant (DICOM) files of the study contained in a zip file stream
+          description: Returns the file of the data item as binary stream. If the data item contains multiple files (e.g. DICOM study), a zip file stream is returned
           content:
-            application/zip:
+            application/octet-stream:
               schema:
                 type: string
                 format: binary
@@ -108,36 +108,14 @@ paths:
         "400":
           $ref: '#/components/responses/invalidStudyInstanceUID'        
 
-  /download/report/{uid}:
-    description:  Downloads only the report(s) for the given study (denoted by its studyInstanceUID) as zip file
-    get:
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/studyInstanceUIDParam"
-      responses:
-        "200":
-          description: The report files of the study contained in a zip file stream
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        "401":
-          $ref: '#/components/responses/invalidCredentials'     
-        "503":
-          $ref: '#/components/responses/comebackLater'      
-        "400":
-          $ref: '#/components/responses/invalidStudyInstanceUID'        
-
   /download/all:
-    description: download all studies and reports of an account
+    description: Download all data sets
     get:
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: All image and report files of all studies of the account contained in a zip file stream
+          description: Returns all files of all data sets in a zip file stream
           content:
             application/zip:
               schema:
@@ -212,15 +190,17 @@ components:
     dataItem:
       type: object
       required:
+        - id
         - mimeType
-        - uid
-        - dataDescription
+        - name
       properties:
+        id:                
+          type: string
         mimeType:           # application/dicom, application/pdf, ...
           type: string
-        uid:                # dicom: studyInstanceUID (0020,000D)
+        studyInstanceUID:   # dicom: studyInstanceUID (0020,000D)
           type: string
-        dataDescription:    # dicom: studyDescription (0008,1030)
+        name:               # dicom: studyDescription (0008,1030)
           type: string
         date:               # dicom: studyDate (0008,0020)
           type: string
@@ -236,8 +216,6 @@ components:
           format: date
         fileCount:
           type: integer 
-        reportAvailable:
-          type: boolean
 
     dataList:
       type: array
@@ -253,8 +231,8 @@ components:
           minimum: 0
 
   parameters:
-    studyInstanceUIDParam:
-      name: uid
+    idParam:
+      name: id
       in: path
       required: true
       schema:
