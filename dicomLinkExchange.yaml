@@ -81,7 +81,7 @@ paths:
           $ref: '#/components/responses/invalidCredentials'     
 
   /download/{id}:
-    description:  Downloads the file(s) of the data item for the given id
+    description: Downloads the file(s) of the data item for the given id
     get:
       security:
         - bearerAuth: []
@@ -188,13 +188,13 @@ components:
         - mimeType
         - name
       properties:
-        id:                 
+        id:                
           type: string
         mimeType:           # application/dicom, application/pdf, ...
           type: string
         studyInstanceUID:   # dicom: studyInstanceUID (0020,000D)
           type: string
-        name:    # dicom: studyDescription (0008,1030)
+        name:               # dicom: studyDescription (0008,1030)
           type: string
         date:               # dicom: studyDate (0008,0020)
           type: string
