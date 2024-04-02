@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.9
+  version: "0.9"
 
 servers:
   - url: /dlx/
@@ -22,26 +22,22 @@ paths:
                 $ref: '#/components/schemas/apiInfo'
 
   /token/{id}:
-    description: Ihe initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests
+    description: Ihe initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint.
     get:
       parameters:
         - in: path
           name: id
-          description: Token which identifies the download package
+          description: Token which identifies the download package, e.g. an alpha numerical code
           required: true
           schema:
             type: string 
       responses:
         "200":
-          description: Returns the 2FA questions in JSON format
+          description: Returns the 2FA questions in JSON format. If the token does not exist, a default question scheme is returned, e.g. to query the date of birth.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tfaQuestions'
-        "404":
-          description: Token does not exist or is invalide
-        "5XX":
-          description: Unexpected server error
           
   /tokentfa/{id}:
     description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their IDs. 
@@ -49,7 +45,7 @@ paths:
       parameters:
         - in: path
           name: id
-          description: Token which identifies the download package
+          description: Token which identifies the download package, e.g. an alpha numerical code
           required: true
           schema:
             type: string
@@ -66,10 +62,8 @@ paths:
             application/jwt:
               schema:
                 type: string      
-        "403":
-          description: Token does not exist, is invalide or credentials are wrong
-        "5XX":
-          description: Unexpected server error
+        "401":
+          description: Authentication failed. Token does not exist or additional factors do not match.
 
   /list:
     description:  Returns a list of the metadata of all available medical data sets 
@@ -78,7 +72,7 @@ paths:
         - bearerAuth: []
       responses:
         "200":
-          description: a list of study descriptions
+          description: A list of medical data items
           content:
             application/json:
               schema:
@@ -86,18 +80,18 @@ paths:
         "401":
           $ref: '#/components/responses/invalidCredentials'     
 
-  /download/{uid}:
-    description:  Downloads the study for the given studyInstanceUID as zip file
+  /download/{id}:
+    description:  Downloads the file(s) of the data item for the given id
     get:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/studyInstanceUIDParam"
+        - $ref: "#/components/parameters/idParam"
       responses:
         "200":
-          description: All relevant (DICOM) files of the study contained in a zip file stream
+          description: Returns the file of the data item as binary stream. If the data item contains multiple files (e.g. DICOM study), a zip file stream is returned
           content:
-            application/zip:
+            application/octet-stream:
               schema:
                 type: string
                 format: binary
@@ -106,38 +100,16 @@ paths:
         "503":
           $ref: '#/components/responses/comebackLater'       
         "400":
-          $ref: '#/components/responses/invalidStudyInstanceUID'        
-
-  /download/report/{uid}:
-    description:  Downloads only the report(s) for the given study (denoted by its studyInstanceUID) as zip file
-    get:
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/studyInstanceUIDParam"
-      responses:
-        "200":
-          description: The report files of the study contained in a zip file stream
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        "401":
-          $ref: '#/components/responses/invalidCredentials'     
-        "503":
-          $ref: '#/components/responses/comebackLater'      
-        "400":
-          $ref: '#/components/responses/invalidStudyInstanceUID'        
+          $ref: '#/components/responses/invalidStudyInstanceUID'    
 
   /download/all:
-    description: download all studies and reports of an account
+    description: Download all data sets
     get:
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: All image and report files of all studies of the account contained in a zip file stream
+          description: Returns all files of all data sets in a zip file stream
           content:
             application/zip:
               schema:
@@ -212,15 +184,17 @@ components:
     dataItem:
       type: object
       required:
+        - id
         - mimeType
-        - uid
-        - dataDescription
+        - name
       properties:
+        id:                 
+          type: string
         mimeType:           # application/dicom, application/pdf, ...
           type: string
-        uid:                # dicom: studyInstanceUID (0020,000D)
+        studyInstanceUID:   # dicom: studyInstanceUID (0020,000D)
           type: string
-        dataDescription:    # dicom: studyDescription (0008,1030)
+        name:    # dicom: studyDescription (0008,1030)
           type: string
         date:               # dicom: studyDate (0008,0020)
           type: string
@@ -236,8 +210,7 @@ components:
           format: date
         fileCount:
           type: integer 
-        reportAvailable:
-          type: boolean
+
 
     dataList:
       type: array
@@ -253,8 +226,8 @@ components:
           minimum: 0
 
   parameters:
-    studyInstanceUIDParam:
-      name: uid
+    idParam:
+      name: id
       in: path
       required: true
       schema:
@@ -263,7 +236,7 @@ components:
 
   responses:
     invalidCredentials:
-          description: invalid credentials provided - use /token (and possibly /tokentfa) before
+          description: invalid credentials provided - use /token and /tokentfa before
 
     comebackLater:
         description: If the server is busy, a 503 status code means "please come back later"
