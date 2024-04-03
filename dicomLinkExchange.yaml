@@ -3,33 +3,28 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: 0.9
+  version: "0.9"
 
 servers:
-  - url: /
+  - url: /dlx/v1
     description: Demo server
     
 paths:
   /api_info:
     description: Provides information on version and implemented capabilities of the api
-    get:    
+    get:
       responses:
         "200":
-          description: A json string representing information about the api
+          description: A JSON string representing information about the api
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/apiInfo'
 
   /token/{id}:
-    description: Ihe initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint.
+    description: The initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DLX-API is required. This allowes pre-existing token-URLs to foward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DLX-API should return the same result as the defined dlx-endpoint https://example.com/dlx/v1/token/{id}) 
     get:
       parameters:
-        - in: header
-          name: X-DLX-API
-          schema: 
-            type: boolean
-          #required: true
         - in: path
           name: id
           description: Token which identifies the download package, e.g. an alpha numerical code
@@ -43,8 +38,6 @@ paths:
             application/json:
                 schema:
                     $ref: '#/components/schemas/tfaQuestions'
-        "5XX":
-          description: Unexpected server error
           
   /tokentfa/{id}:
     description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their IDs. 
@@ -61,21 +54,21 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/tfaAnswers'
-        required: true    
+        required: true
       responses:
         "200":
-          description: response with valid JWT 
+          description: response with valid JWT
           content:
             application/jwt:
               schema:
-                type: string      
+                type: string
         "401":
           description: Authentication failed. Token does not exist or additional factors do not match.
-        "5XX":
-          description: Unexpected server error
+        "403":
+          description: Authentication failed. Token expired. This errorcode allowes implementing clients to display a specific error message for this unique usecase where everything is correct but the token has expired. Every other error should result in error code 401.
 
   /list:
-    description:  Returns a list of the metadata of all available medical data sets 
+    description: Returns a list of the metadata of all available medical data sets
     get:
       security:
         - bearerAuth: []
@@ -85,9 +78,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dataList'    
+                $ref: '#/components/schemas/dataList'
         "401":
-          $ref: '#/components/responses/invalidCredentials'     
+          $ref: '#/components/responses/invalidCredentials'
 
   /download/{id}:
     description: Downloads the file(s) of the data item for the given id
@@ -100,16 +93,16 @@ paths:
         "200":
           description: Returns the file of the data item as binary stream. If the data item contains multiple files (e.g. DICOM study), a zip file stream is returned
           content:
-            application/octet-stream:
+            application/zip:
               schema:
                 type: string
                 format: binary
         "401":
-          $ref: '#/components/responses/invalidCredentials'     
+          $ref: '#/components/responses/invalidCredentials'
         "503":
-          $ref: '#/components/responses/comebackLater'       
+          $ref: '#/components/responses/comebackLater'
         "400":
-          $ref: '#/components/responses/invalidStudyInstanceUID'    
+          $ref: '#/components/responses/invalidStudyInstanceUID'
 
   /download/all:
     description: Download all data sets
@@ -125,17 +118,13 @@ paths:
                 type: string
                 format: binary
         "401":
-          $ref: '#/components/responses/invalidCredentials'     
+          $ref: '#/components/responses/invalidCredentials'
         "503":
-          $ref: '#/components/responses/comebackLater'       
+          $ref: '#/components/responses/comebackLater'
 
 components:
 
   securitySchemes:
-
-    basicAuth:     # <-- arbitrary name for the security scheme
-      type: http
-      scheme: basic
 
     bearerAuth:
       type: http
@@ -153,34 +142,12 @@ components:
                 type: string
             vendorInformation:
                 type: string
-            paths:
-                type: array
-                items:
-                    $ref: '#/components/schemas/apiPaths'    
+            apiBasePath:
+                type: string
         example:
             dlxVersion: 1
             vendorInformation: DLX Company Ltd.
-            apiPath: {"token": "http://<server>/token",
-                    "tokentfs": "http://<server>/dlx_api/tokentfa",
-                    "list": "http://<server>/dlx_api/list",
-                    "download": "http://<server>/dlx_api/download"}
-
-    apiPaths:         
-        type: object
-        properties:
-            token:
-                type: string
-            tokentfs:
-                type: string
-            list:
-                type: string
-            download:
-                type: string
-        example:
-            token: http://<server>/token
-            tokentfs: http://<server>/dlx_api/tokentfa
-            list: http://<server>/dlx_api/list
-            download: http://<server>/dlx_api/download
+            apiBasePath: https://example.com/portal/dlx/v1
 
     tfaQuestions:
         type: object
@@ -209,8 +176,8 @@ components:
                     * `PAT_BIRTH_DATE` - e.g. date from DICOM TAG 0010:0030
                     * `STUDY_DATE` - e.g. date from DICOM TAGS 0008:0020
                     * `KV_NUMBER` - as string
-                    * `CUSTOM` - any custom value which is not specified above        
-            answerFormat:  
+                    * `CUSTOM` - any custom value which is not specified above
+            answerFormat:
                 type: string
                 enum: [DATE, STRING]
                 description: |
@@ -269,9 +236,9 @@ components:
         $ref: '#/components/schemas/dataItem'
 
     comebackLaterResponse:
-      type: object  
+      type: object
       nullable: true
-      properties: 
+      properties:
         timeOutInSeconds:
           type: integer
           minimum: 0
@@ -294,7 +261,7 @@ components:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/comebackLaterResponse'      
+              $ref: '#/components/schemas/comebackLaterResponse'
 
     invalidStudyInstanceUID:
         description: If the study or report for the given StudyInstanceUID is unknown
