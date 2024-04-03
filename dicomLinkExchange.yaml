@@ -3,10 +3,10 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems
-  version: "0.9"
+  version: 0.9
 
 servers:
-  - url: /dlx/
+  - url: /
     description: Demo server
     
 paths:
@@ -25,6 +25,11 @@ paths:
     description: Ihe initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint.
     get:
       parameters:
+        - in: header
+          name: X-DLX-API
+          schema: 
+            type: boolean
+          #required: true
         - in: path
           name: id
           description: Token which identifies the download package, e.g. an alpha numerical code
@@ -36,8 +41,10 @@ paths:
           description: Returns the 2FA questions in JSON format. If the token does not exist, a default question scheme is returned, e.g. to query the date of birth.
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/tfaQuestions'
+                schema:
+                    $ref: '#/components/schemas/tfaQuestions'
+        "5XX":
+          description: Unexpected server error
           
   /tokentfa/{id}:
     description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their IDs. 
@@ -64,6 +71,8 @@ paths:
                 type: string      
         "401":
           description: Authentication failed. Token does not exist or additional factors do not match.
+        "5XX":
+          description: Unexpected server error
 
   /list:
     description:  Returns a list of the metadata of all available medical data sets 
@@ -140,37 +149,80 @@ components:
         required:
           - dlxVersion
         properties:
-          dlxVersion:
-            type: string
-          vendorInformation:
-            type: string
+            dlxVersion:
+                type: string
+            vendorInformation:
+                type: string
+            paths:
+                type: array
+                items:
+                    $ref: '#/components/schemas/apiPaths'    
+        example:
+            dlxVersion: 1
+            vendorInformation: DLX Company Ltd.
+            apiPath: {"token": "http://<server>/token",
+                    "tokentfs": "http://<server>/dlx_api/tokentfa",
+                    "list": "http://<server>/dlx_api/list",
+                    "download": "http://<server>/dlx_api/download"}
 
-    tfaQuestions:
-      type: array
-      items:
+    apiPaths:         
         type: object
         properties:
-          question:
-            type: string
-          questionId:
-            type: string
-          questionType:
-            type: string
-            enum: [PAT_BIRTH_DATE, STUDY_DATE, KV_NUMBER, CUSTOM]
-            description: |
-              Format:
-              * `PAT_BIRTH_DATE` - e.g. date from DICOM TAG 0010:0030
-              * `STUDY_DATE` - e.g. date from DICOM TAGS 0008:0020
-              * `KV_NUMBER` - as string
-              * `CUSTOM` - any custom value which is not specified above        
-          answerFormat:  
-            type: string
-            enum: [DATE, STRING]
-            description: |
-              Format:
-              * `DATE` - date formated as YYYYMMDD
-              * `STRING` - arbitrary string
-    
+            token:
+                type: string
+            tokentfs:
+                type: string
+            list:
+                type: string
+            download:
+                type: string
+        example:
+            token: http://<server>/token
+            tokentfs: http://<server>/dlx_api/tokentfa
+            list: http://<server>/dlx_api/list
+            download: http://<server>/dlx_api/download
+
+    tfaQuestions:
+        type: object
+        properties: 
+            apiInfo:
+                type: array
+                items:
+                    $ref: '#/components/schemas/apiInfo'
+            tfaQuestion:
+                type: array
+                items:
+                    $ref: '#/components/schemas/tfaQuestion'
+
+    tfaQuestion:
+        type: object
+        properties:
+            question:
+                type: string
+            questionId:
+                type: string
+            questionType:
+                type: string
+                enum: [PAT_BIRTH_DATE, STUDY_DATE, KV_NUMBER, CUSTOM]
+                description: |
+                    Format:
+                    * `PAT_BIRTH_DATE` - e.g. date from DICOM TAG 0010:0030
+                    * `STUDY_DATE` - e.g. date from DICOM TAGS 0008:0020
+                    * `KV_NUMBER` - as string
+                    * `CUSTOM` - any custom value which is not specified above        
+            answerFormat:  
+                type: string
+                enum: [DATE, STRING]
+                description: |
+                    Format:
+                    * `DATE` - date formated as YYYYMMDD
+                    * `STRING` - arbitrary string
+        example:
+            question: Wann haben Sie Geburtstag?
+            questionId: 1
+            questionType: PAT_BIRTH_DATE
+            answerFormat: DATE
+        
     tfaAnswers:
       type: array
       items:
@@ -210,7 +262,6 @@ components:
           format: date
         fileCount:
           type: integer 
-
 
     dataList:
       type: array
