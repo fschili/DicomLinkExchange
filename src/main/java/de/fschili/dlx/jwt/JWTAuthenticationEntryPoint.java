@@ -18,7 +18,7 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        log.debug("Caller is not authorized (" + authException + ")");
+        log.error("Caller is not authorized (" + authException + ")");
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     }
 

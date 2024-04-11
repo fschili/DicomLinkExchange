@@ -21,13 +21,17 @@ This project includes a minimal demo server for prototyping of the api and speci
 
 To generate the api using the yaml-specifications and build the server use
 
-    mvn clean install
+    mvn clean compile package
     
 ### Running (java)
 
 To start the server, launch the main class `de.fschili.dlx.DlxDemoServer` from your IDE
 
     de.fschili.dlx.DlxDemoServer
+    
+or via spring-boot with
+
+    mvn spring-boot:run  
     
 respectively lauch the generated jar from commandline using
 
@@ -38,6 +42,10 @@ The demo server will run at
     http://localhost:3000/
     
 and will respond to the defined requests.
+
+Konfiguration can be made at
+
+    resources/application.properties
 
 ### Documentation (Swagger)
 

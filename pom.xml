@@ -95,10 +95,14 @@
                 </executions>
             </plugin>
 
-            <!-- enable commanline launch with boot-plugin: java -jar dicom-link-exchange.jar -->
+            <!-- enable commandline launch with boot-plugin: java -jar
+            dicom-link-exchange.jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <executable>true</executable>
+                </configuration>
             </plugin>
 
         </plugins>
