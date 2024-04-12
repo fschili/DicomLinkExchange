@@ -1,6 +1,7 @@
 package de.fschili.dlx;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -10,10 +11,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import de.fschili.dlx.jwt.JWTAuthenticationEntryPoint;
 import de.fschili.dlx.jwt.JWTRequestFilter;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+
+/**
+ * Added workaround with @SecurityScheme for declarative description of JWT to avoid bug described here:
+ * 
+ * https://stackoverflow.com/questions/77717946/enabling-an-authorize-button-in-swagger-ui-declaratively
+ * 
+ * Normally the should work out of the box with the specifications in the dicomLinkExchange.yaml file *
+ */
 
 @SuppressWarnings("deprecation")
 @Configuration
 @EnableWebSecurity
+@SecurityScheme(type = SecuritySchemeType.HTTP, name = "bearerAuth", description = "authorization with JWT token", scheme = "bearer", bearerFormat = "JWT")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public static final String URL_BASE = "/dlx/v1";
