@@ -17,7 +17,22 @@ This project includes a minimal demo server for prototyping of the api and speci
 
 **THE IMPLEMENTATION OF THE DEMO SERVER IN NOT COMPLETE AND ONLY FOR DEMO PURPOSES!**
 
-### Building (maven/java)
+### Available token
+
+Following demo token are available (hard coded).
+
+###### Birthday-Token: ABC-S1Z-98A   
+    Question: "Wann haben Sie Geburtstag?"
+    Answer: "19700102"
+
+###### Custom-Token: HDF-34F-HK6
+    Question: "Wann war ihre Untersuchung?"
+    Answer: "20240203"
+ 
+    Question:  "Wie heißt Ihr behandelnder Arzt?"
+    Answer: "Dr. Mayer"
+
+##### Building (maven/java)
 
 To generate the api using the yaml-specifications and build the server use
 
