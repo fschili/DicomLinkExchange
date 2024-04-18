@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: DLX API
   description: Prototype of the DICOM Link Exchange (DLX) initiative. The API represents the outcome of an initiative of medical imaging software manufactures to standardize downloads from their systems.
-  version: "0.9"
+  version: "1.0"
 
 servers:
   - url: /dlx/v1
@@ -11,27 +11,27 @@ servers:
     
 paths:
   /api_info:
-    description: Provides information on version and implemented capabilities of the api
+    description: Provides information on version and implemented capabilities of the api.
     get:
       responses:
         "200":
-          description: A JSON string representing information about the api
+          description: A JSON string representing information about the api.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/apiInfo'
 
   /token/{id}:
-    description: The initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DLX-API is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DLX-API should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{id}) 
+    description: The initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DLX-API is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DLX-API should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{id}) .
     get:
       parameters:
         - in: header
-          name: X-DLX-API # optional, and used to activate the DLX API functionality
+          name: X-DICOM-LINK-EXCHANGE # optional, and used to activate the DLX API functionality
           schema: 
-            type: string # header must exists but will not be evaluated
+            type: string # header must exist but will not be evaluated
         - in: path
           name: id
-          description: Token id which identifies the download package, e.g. an alpha numerical code
+          description: Token id which identifies the download package, e.g. an alpha numerical code like 'ajk3d-238SD-sJJD1'.
           required: true
           schema:
             type: string 
@@ -49,7 +49,7 @@ paths:
       parameters:
         - in: path
           name: id
-          description: Token which identifies the download package, e.g. an alpha numerical code
+          description: Token which identifies the download package, e.g. an alpha numerical code like 'ajk3d-238SD-sJJD1'.
           required: true
           schema:
             type: string
@@ -61,7 +61,7 @@ paths:
         required: true
       responses:
         "200":
-          description: Response with valid JWT
+          description: Response with a valid JWT.
           content:
             application/jwt:
               schema:
@@ -72,7 +72,7 @@ paths:
           description: Authentication failed. Token expired. This errorcode allowes implementing clients to display a specific error message for this unique usecase where everything is correct but the token has expired. Every other error should result in error code 401.
 
   /list:
-    description: Returns a list of the metadata of all available medical data items
+    description: Returns a list of the metadata of all available medical data items.
     get:
       security:
         - bearerAuth: []
@@ -87,7 +87,7 @@ paths:
           $ref: '#/components/responses/invalidCredentials'
 
   /download/{id}:
-    description: Downloads the file(s) of the data item for the given id
+    description: Downloads the data item for the given id with the specified mimeType.
     get:
       security:
         - bearerAuth: []
@@ -100,7 +100,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Returns the file of the data item as binary stream. If the data item contains multiple files (e.g. DICOM study), a zip file stream is returned
+          description: Returns the referenced file of the data item as binary stream with the specified mimeType (e.g. application/pdf). If the data item contains multiple files resp. a DICOM study, a zip file stream is returned. DICOM studies MUST always conform to IHE PDI in zip format.
           content:
             application/octet-stream:
               schema:
@@ -114,13 +114,13 @@ paths:
           $ref: '#/components/responses/comebackLater'
 
   /downloadall:
-    description: Download all data items
+    description: Downloads all data items as zip container in IHE PDI format.
     get:
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: Returns all files of all data items in a zip file stream
+          description: Returns all files of all data items in a zip file stream. The download MUST conform to the IHE PID in zip format.
           content:
             application/zip:
               schema:
@@ -140,6 +140,7 @@ components:
 
   schemas:
     apiInfo:
+        description: General information about the api and version.
         type: object
         required:
           - dlxVersion
@@ -157,6 +158,7 @@ components:
             apiBasePath: https://example.com/portal/dlx/v1
 
     tfaQuestions:
+        description: Information about the api and list of tfa questions.
         type: object
         properties: 
             apiInfo:
@@ -169,6 +171,7 @@ components:
                     $ref: '#/components/schemas/tfaQuestion'
 
     tfaQuestion:
+        description: Tfa question, which must be answered by the user or an automatic system.
         type: object
         properties:
             question:
@@ -177,12 +180,12 @@ components:
                 type: string
             questionType:
                 type: string
-                enum: [PAT_BIRTH_DATE, STUDY_DATE, KV_NUMBER, CUSTOM]
+                enum: [PAT_BIRTH_DATE, STUDY_DATE, PASSWORD, CUSTOM]
                 description: |
                     Format:
                     * `PAT_BIRTH_DATE` - e.g. date from dicom: Patient's Birth Date (0010,0030)
                     * `STUDY_DATE` - e.g. date from dicom: Study Date (0008,0020)
-                    * `KV_NUMBER` - as string
+                    * `PASSWORD` - e.g. an OTP oder TOTP as string
                     * `CUSTOM` - any custom value which is not specified above
             answerFormat:
                 type: string
@@ -198,6 +201,7 @@ components:
             answerFormat: DATE
     
     tfaAnswers:
+        description: List of tfa answers.
         type: object
         properties: 
             tfaAnswer:
@@ -205,7 +209,8 @@ components:
                 items:
                     $ref: '#/components/schemas/tfaAnswer'
 
-    tfaAnswer:    
+    tfaAnswer:
+        description: Tfa answer, referenced by it's id.
         type: object
         properties:
           questionId:
@@ -217,6 +222,7 @@ components:
             answer: 19700101
               
     dataItems:
+      description: List of data items.
       type: object
       properties: 
         dataItem:
@@ -225,6 +231,7 @@ components:
             $ref: '#/components/schemas/dataItem'
 
     dataItem:
+      description: A data item represents a single object for the given token. This could be a report in pdf format (application/pdf) or a single dicom file (application/dicom). DICOM studies SHOULD ALWAYS be bundled as zip files conforming to the IHE PDI profile with the mimeType application/pdf. 
       type: object
       required:
         - id
@@ -251,7 +258,7 @@ components:
         patientsBirthdate:  # dicom: patientsBirthdate (0010,0030)
           type: string 
           format: date
-        fileCount:
+        fileCount:          # number of files in a zip container
           type: integer 
 
     comebackLaterResponse:
@@ -266,14 +273,14 @@ components:
 
   responses:
     invalidCredentials:
-      description: invalid credentials provided - use /token and /tokentfa before
+      description: Ivalid credentials provided - use /token and /tokentfa before.
 
     comebackLater:
-      description: If the server is busy, a 503 status code means "please come back later"
+      description: If the server is busy, a 503 status code means "please come back later".
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/comebackLaterResponse'
 
     invalidDataItemId:
-      description: If the study or report for the given dataItemId is unknown
+      description: If the study or report for the given id is unknown.
