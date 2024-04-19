@@ -23,7 +23,7 @@ public class ApiInfoService implements ApiInfoApiDelegate {
 
     protected static ApiInfo getApiInfo() {
         ApiInfo info = new ApiInfo();
-        info.dlxVersion("0.9");
+        info.dlxVersion("1.0");
         info.vendorInformation("CHILI GmbH");
 
         info.apiBasePath("https://<server>/dlx/v1/");

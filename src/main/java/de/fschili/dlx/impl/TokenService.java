@@ -24,11 +24,15 @@ public class TokenService implements TokenApiDelegate {
 
     public static final String TOKEN_BIRTHDATE = "ABC-S1Z-98A";
     public static final String TOKEN_BIRTHDATE_QUESTION = "Wann haben Sie Geburtstag?";
-    public static final String TOKEN_BIRTHDATE_ANSWER = "19700102";
+    public static final String TOKEN_BIRTHDATE_ANSWER = "19700101";
+
+    public static final String TOKEN_PASSWORD = "DF2-11Z-KS4";
+    public static final String TOKEN_PASSWORD_QUESTION = "Wie lautet Ihr Einmal-Passwort?";
+    public static final String TOKEN_PASSWORD_ANSWER = "132-238-252";
 
     public static final String TOKEN_CUSTOM = "HDF-34F-HK6";
     public static final String TOKEN_CUSTOM_QUESTION_1 = "Wann war ihre Untersuchung?";
-    public static final String TOKEN_CUSTOM_ANSWER_1 = "20240203";
+    public static final String TOKEN_CUSTOM_ANSWER_1 = "20240419";
     public static final String TOKEN_CUSTOM_QUESTION_2 = "Wie heißt Ihr behandelnder Arzt?";
     public static final String TOKEN_CUSTOM_ANSWER_2 = "Dr. Mayer";
 
@@ -38,11 +42,11 @@ public class TokenService implements TokenApiDelegate {
             .collect(Collectors.toCollection(HashSet::new));
 
     @Override
-    public ResponseEntity<TfaQuestions> tokenIdGet(String id, String X_DLX_API) {
-        log.debug("Got token request for: " + id + " (DLX API: " + X_DLX_API + ")");
+    public ResponseEntity<TfaQuestions> tokenIdGet(String id, String X_DICOM_LINK_EXCHANGE) {
+        log.debug("Got token request for: " + id + " (DLX API: " + X_DICOM_LINK_EXCHANGE + ")");
 
-        if (X_DLX_API == null || X_DLX_API.isEmpty()) {
-            log.info("X-DLX-API flag is not set. Returning normal portal page without DLX functionality. But continue in DEMO mode..");
+        if (X_DICOM_LINK_EXCHANGE == null || X_DICOM_LINK_EXCHANGE.isEmpty()) {
+            log.info("X_DICOM_LINK_EXCHANGE flag is not set. Returning normal portal page without DLX functionality. But continue in DEMO mode..");
         }
 
         if (!(isBirthdayToken(id) || isCustomToken(id))) {
@@ -59,6 +63,16 @@ public class TokenService implements TokenApiDelegate {
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.PAT_BIRTH_DATE);
             question.setAnswerFormat(AnswerFormatEnum.DATE);
+
+            questions.addTfaQuestionItem(question);
+        }
+        else if (isPasswordToken(id)) {
+            log.info("Return password question for token '" + id + "'");
+            TfaQuestion question = new TfaQuestion();
+            question.setQuestion(TOKEN_PASSWORD_QUESTION);
+            question.setQuestionId("1");
+            question.setQuestionType(QuestionTypeEnum.PASSWORD);
+            question.setAnswerFormat(AnswerFormatEnum.STRING);
 
             questions.addTfaQuestionItem(question);
         }
@@ -81,7 +95,7 @@ public class TokenService implements TokenApiDelegate {
             questions.addTfaQuestionItem(question2);
         }
         else {
-            log.info("Return DEFAULT birthdate question for token '" + id + "'");
+            log.info("Return DEFAULT birthdate question for token '" + id + "' (This will never get a correct answer!)");
             TfaQuestion question = new TfaQuestion();
             question.setQuestion(TOKEN_QUESTION_401);
             question.setQuestionId("1");
@@ -101,12 +115,20 @@ public class TokenService implements TokenApiDelegate {
         }
     }
 
-    private boolean isBirthdayToken(String token) {
+    private static boolean isBirthdayToken(String token) {
         return (token != null && token.equalsIgnoreCase(TOKEN_BIRTHDATE));
     }
 
-    private boolean isCustomToken(String token) {
+    private static boolean isPasswordToken(String token) {
+        return (token != null && token.equalsIgnoreCase(TOKEN_PASSWORD));
+    }
+
+    private static boolean isCustomToken(String token) {
         return (token != null && token.equalsIgnoreCase(TOKEN_CUSTOM));
+    }
+
+    public static boolean isValidToken(String token) {
+        return (isBirthdayToken(token) || isPasswordToken(token) || isCustomToken(token));
     }
 
 }
