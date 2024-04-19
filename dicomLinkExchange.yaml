@@ -236,28 +236,28 @@ components:
       required:
         - id
         - mimeType
-        - name
+        - description
       properties:
         id:                
           type: string
         mimeType:           # application/dicom, application/pdf, ...
           type: string
-        name:               # dicom: studyDescription (0008,1030)
+        description:        # dicom: studyDescription (0008,1030)
           type: string
         studyInstanceUID:   # dicom: studyInstanceUID (0020,000D)
           type: string
         date:               # dicom: studyDate (0008,0020)
           type: string
           format: date   
-        modalities:         
+        modalities:         # dicom: modality (0008,0060) resp. modalities​InStudy (0008,0061)
           type: string  
-        patientsSex:        # dicom: patientsSex (0010,0040)
-          type: string   
         patientsName:       # dicom: patientsName (0010,0010)
           type: string
         patientsBirthdate:  # dicom: patientsBirthdate (0010,0030)
           type: string 
           format: date
+        patientsSex:        # dicom: patientsSex (0010,0040)
+          type: string
         fileCount:          # number of files in a zip container
           type: integer 
 

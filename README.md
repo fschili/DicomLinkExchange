@@ -17,20 +17,29 @@ This project includes a minimal demo server for prototyping of the api and speci
 
 **THE IMPLEMENTATION OF THE DEMO SERVER IN NOT COMPLETE AND ONLY FOR DEMO PURPOSES!**
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 ### Available token
 
 Following demo token are available (hard coded).
 
 ###### Birthday-Token: ABC-S1Z-98A   
+
     Question: "Wann haben Sie Geburtstag?"
-    Answer: "19700102"
+    Answer: "19700101"
+    
+###### Password-Token: DF2-11Z-KS4    
+
+    Question: "Wie lautet Ihr Einmal-Passwort?"
+    Answer: "132-238-252"
 
 ###### Custom-Token: HDF-34F-HK6
-    Question: "Wann war ihre Untersuchung?"
-    Answer: "20240203"
+
+    Question 1: "Wann war ihre Untersuchung?"
+    Answer 1: "20240419"
  
-    Question:  "Wie heißt Ihr behandelnder Arzt?"
-    Answer: "Dr. Mayer"
+    Question 2:  "Wie heißt Ihr behandelnder Arzt?"
+    Answer 2: "Dr. Mayer"
 
 ##### Building (maven/java)
 
