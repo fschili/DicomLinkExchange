@@ -1,15 +1,18 @@
 package de.fschili.dlx.impl;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.NativeWebRequest;
 
 import de.fschili.dlx.openapi.api.TokenApiDelegate;
 import de.fschili.dlx.openapi.model.TfaQuestion;
@@ -38,8 +41,15 @@ public class TokenService implements TokenApiDelegate {
 
     public static final String TOKEN_QUESTION_401 = "Wann haben Sie Geburtstag?";
 
-    public static final Set<String> AVAILABLE_TOKENS = Stream.of(TOKEN_BIRTHDATE, TOKEN_CUSTOM)
+    public static final Set<String> AVAILABLE_TOKENS = Stream.of(TOKEN_BIRTHDATE, TOKEN_PASSWORD, TOKEN_CUSTOM)
             .collect(Collectors.toCollection(HashSet::new));
+
+    @Autowired
+    private NativeWebRequest nativeWebRequest;
+
+    public Optional<NativeWebRequest> getRequest() {
+        return Optional.ofNullable(nativeWebRequest);
+    }
 
     @Override
     public ResponseEntity<TfaQuestions> tokenIdGet(String id, String X_DICOM_LINK_EXCHANGE) {
@@ -54,7 +64,7 @@ public class TokenService implements TokenApiDelegate {
         }
 
         TfaQuestions questions = new TfaQuestions();
-        questions.addApiInfoItem(ApiInfoService.getApiInfo());
+        questions.addApiInfoItem(ApiInfoService.getApiInfo(getRequest()));
 
         if (isBirthdayToken(id)) {
             log.info("Return birthdate question for token '" + id + "'");
