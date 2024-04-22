@@ -6,7 +6,7 @@
 
     <groupId>de.fschili.dlx</groupId>
     <artifactId>dicom-link-exchange</artifactId>
-    <version>0.9</version>
+    <version>1.0</version>
 
     <name>DicomLinkExchange</name>
     <url>https://nexus-chili.com</url>
@@ -104,8 +104,9 @@
                     <executable>true</executable>
                 </configuration>
             </plugin>
-
+            
         </plugins>
+        
     </build>
 
 </project>
