@@ -32,12 +32,6 @@ public class JWTRequestFilter extends OncePerRequestFilter {
     public static final Set<String> UNFILTERED_PATH = Stream.of("/api-docs/", "/swagger-ui/", "/token/", "/tokentfa/", "/api_info")
             .collect(Collectors.toCollection(HashSet::new));
 
-    /*public static void main(String[] args) {
-        String test = "/dlx/v1/api_info";
-        test = "dlx/v1/token/123";
-        System.out.println(test.matches(".*(/api-docs|/swagger-ui|/api_info|/token/|/tokentfa/).*"));
-    }*/
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         String requestPath = request.getServletPath();

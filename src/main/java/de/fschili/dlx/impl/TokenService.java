@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import de.fschili.dlx.openapi.api.TokenApiDelegate;
+import de.fschili.dlx.openapi.model.Question;
 import de.fschili.dlx.openapi.model.TfaQuestion;
 import de.fschili.dlx.openapi.model.TfaQuestions;
 import de.fschili.dlx.openapi.model.TfaQuestion.AnswerFormatEnum;
@@ -27,16 +28,21 @@ public class TokenService implements TokenApiDelegate {
 
     public static final String TOKEN_BIRTHDATE = "ABC-S1Z-98A";
     public static final String TOKEN_BIRTHDATE_QUESTION = "Wann haben Sie Geburtstag?";
+    public static final String TOKEN_BIRTHDATE_QUESTION_EN = "When is your birthdate?";
+    public static final String TOKEN_BIRTHDATE_QUESTION_FR = "C'est quand votre anniversaire?";
     public static final String TOKEN_BIRTHDATE_ANSWER = "19700101";
 
     public static final String TOKEN_PASSWORD = "DF2-11Z-KS4";
     public static final String TOKEN_PASSWORD_QUESTION = "Wie lautet Ihr Einmal-Passwort?";
+    public static final String TOKEN_PASSWORD_QUESTION_EN = "What is your one-time password?";
     public static final String TOKEN_PASSWORD_ANSWER = "132-238-252";
 
     public static final String TOKEN_CUSTOM = "HDF-34F-HK6";
     public static final String TOKEN_CUSTOM_QUESTION_1 = "Wann war ihre Untersuchung?";
+    public static final String TOKEN_CUSTOM_QUESTION_1_EN = "When was your examination?";
     public static final String TOKEN_CUSTOM_ANSWER_1 = "20240419";
     public static final String TOKEN_CUSTOM_QUESTION_2 = "Wie heißt Ihr behandelnder Arzt?";
+    public static final String TOKEN_CUSTOM_QUESTION_2_EN = "What is the name of your attending physician?";
     public static final String TOKEN_CUSTOM_ANSWER_2 = "Dr. Mayer";
 
     public static final String TOKEN_QUESTION_401 = "Wann haben Sie Geburtstag?";
@@ -69,7 +75,19 @@ public class TokenService implements TokenApiDelegate {
         if (isBirthdayToken(id)) {
             log.info("Return birthdate question for token '" + id + "'");
             TfaQuestion question = new TfaQuestion();
-            question.setQuestion(TOKEN_BIRTHDATE_QUESTION);
+
+            Question itemDE = new Question(TOKEN_BIRTHDATE_QUESTION);
+            itemDE.setLanguage("de");
+            question.addQuestionItem(itemDE);
+
+            Question itemEN = new Question(TOKEN_BIRTHDATE_QUESTION_EN);
+            itemEN.setLanguage("en");
+            question.addQuestionItem(itemEN);
+
+            Question itemFR = new Question(TOKEN_BIRTHDATE_QUESTION_FR);
+            itemFR.setLanguage("fr");
+            question.addQuestionItem(itemFR);
+
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.PAT_BIRTH_DATE);
             question.setAnswerFormat(AnswerFormatEnum.DATE);
@@ -79,7 +97,15 @@ public class TokenService implements TokenApiDelegate {
         else if (isPasswordToken(id)) {
             log.info("Return password question for token '" + id + "'");
             TfaQuestion question = new TfaQuestion();
-            question.setQuestion(TOKEN_PASSWORD_QUESTION);
+
+            Question itemDE = new Question(TOKEN_PASSWORD_QUESTION);
+            itemDE.setLanguage("de");
+            question.addQuestionItem(itemDE);
+
+            Question itemEN = new Question(TOKEN_PASSWORD_QUESTION_EN);
+            itemEN.setLanguage("en");
+            question.addQuestionItem(itemEN);
+
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.PASSWORD);
             question.setAnswerFormat(AnswerFormatEnum.STRING);
@@ -89,7 +115,15 @@ public class TokenService implements TokenApiDelegate {
         else if (isCustomToken(id)) {
             log.info("Return custom questions for token '" + id + "'");
             TfaQuestion question = new TfaQuestion();
-            question.setQuestion(TOKEN_CUSTOM_QUESTION_1);
+
+            Question itemDE = new Question(TOKEN_CUSTOM_QUESTION_1);
+            itemDE.setLanguage("de");
+            question.addQuestionItem(itemDE);
+
+            Question itemEN = new Question(TOKEN_CUSTOM_QUESTION_1_EN);
+            itemEN.setLanguage("en");
+            question.addQuestionItem(itemEN);
+
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.STUDY_DATE);
             question.setAnswerFormat(AnswerFormatEnum.DATE);
@@ -97,7 +131,15 @@ public class TokenService implements TokenApiDelegate {
             questions.addTfaQuestionItem(question);
 
             TfaQuestion question2 = new TfaQuestion();
-            question2.setQuestion(TOKEN_CUSTOM_QUESTION_2);
+
+            Question itemDE2 = new Question(TOKEN_CUSTOM_QUESTION_2);
+            itemDE2.setLanguage("de");
+            question2.addQuestionItem(itemDE2);
+
+            Question itemEN2 = new Question(TOKEN_CUSTOM_QUESTION_2_EN);
+            itemEN2.setLanguage("en");
+            question2.addQuestionItem(itemEN2);
+
             question2.setQuestionId("2");
             question2.setQuestionType(QuestionTypeEnum.CUSTOM);
             question2.setAnswerFormat(AnswerFormatEnum.STRING);
@@ -107,7 +149,10 @@ public class TokenService implements TokenApiDelegate {
         else {
             log.info("Return DEFAULT birthdate question for token '" + id + "' (This will never get a correct answer!)");
             TfaQuestion question = new TfaQuestion();
-            question.setQuestion(TOKEN_QUESTION_401);
+
+            Question itemDE = new Question(TOKEN_QUESTION_401);
+            question.addQuestionItem(itemDE);
+
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.PAT_BIRTH_DATE);
             question.setAnswerFormat(AnswerFormatEnum.DATE);

@@ -36,30 +36,35 @@ public class ApiInfoService implements ApiInfoApiDelegate {
 
     private static String getPath(Optional<NativeWebRequest> request) {
 
-        NativeWebRequest nwr = request.get();
-        if (nwr != null) {
-            Object nativeRequest = nwr.getNativeRequest();
-            if (nativeRequest instanceof HttpServletRequest) {
-                HttpServletRequest r = (HttpServletRequest) nativeRequest;
+        try {
+            NativeWebRequest nwr = request.get();
+            if (nwr != null) {
+                Object nativeRequest = nwr.getNativeRequest();
+                if (nativeRequest instanceof HttpServletRequest) {
+                    HttpServletRequest r = (HttpServletRequest) nativeRequest;
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(r.getScheme());
-                sb.append("://");
-                sb.append(r.getServerName());
-                sb.append(":");
-                sb.append(r.getServerPort());
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(r.getScheme());
+                    sb.append("://");
+                    sb.append(r.getServerName());
+                    sb.append(":");
+                    sb.append(r.getServerPort());
 
-                String contextPath = r.getContextPath();
-                if (contextPath != null && !contextPath.isEmpty()) {
-                    sb.append("/");
-                    sb.append(contextPath);
+                    String contextPath = r.getContextPath();
+                    if (contextPath != null && !contextPath.isEmpty()) {
+                        sb.append("/");
+                        sb.append(contextPath);
+                    }
+
+                    sb.append("/dlx/v1");
+
+                    return sb.toString();
                 }
 
-                sb.append("/dlx/v1");
-
-                return sb.toString();
             }
-
+        }
+        catch (Exception e) {
+            log.error("Could not extract path from request (" + e + ")");
         }
         return "";
 
@@ -67,7 +72,7 @@ public class ApiInfoService implements ApiInfoApiDelegate {
 
     protected static ApiInfo getApiInfo(Optional<NativeWebRequest> request) {
         ApiInfo info = new ApiInfo();
-        info.dlxVersion("1");
+        info.dlxVersion("v1");
         info.vendorInformation("CHILI GmbH");
 
         info.apiBasePath("https://<server>/dlx/v1/");

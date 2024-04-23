@@ -35,7 +35,7 @@ public class ServiceUtils {
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
 
         try {
-            log.debug("Loading file: " + fileName + " from classpath (war).");
+            log.debug("Loading file '" + fileName + "' from classpath (war).");
 
             Resource resource = new ClassPathResource("data/" + fileName, ServiceUtils.class.getClassLoader());
             InputStreamResource streamResource = new InputStreamResource(resource.getInputStream());

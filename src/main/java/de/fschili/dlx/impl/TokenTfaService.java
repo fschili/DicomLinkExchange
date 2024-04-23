@@ -2,7 +2,6 @@ package de.fschili.dlx.impl;
 
 import java.util.List;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -35,11 +34,21 @@ public class TokenTfaService implements TokentfaApiDelegate {
             for (TfaAnswer tfa : answers) {
                 if (tfa.getQuestionId().equals("1")) {
                     if (tfa.getAnswer().equalsIgnoreCase(TokenService.TOKEN_BIRTHDATE_ANSWER)) {
+                        log.info("Got correct answers for birthday token '" + id + "'");
                         return new ResponseEntity<String>(JWTUtil.generateJwt(id), HttpStatus.OK);
                     }
                 }
             }
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        else if (id.equalsIgnoreCase(TokenService.TOKEN_PASSWORD)) {
+            for (TfaAnswer tfa : answers) {
+                if (tfa.getQuestionId().equals("1")) {
+                    if (tfa.getAnswer().equalsIgnoreCase(TokenService.TOKEN_PASSWORD_ANSWER)) {
+                        log.info("Got correct answers for password token '" + id + "'");
+                        return new ResponseEntity<String>(JWTUtil.generateJwt(id), HttpStatus.OK);
+                    }
+                }
+            }
         }
         else if (id.equalsIgnoreCase(TokenService.TOKEN_CUSTOM)) {
             boolean answer1 = false;
@@ -52,17 +61,16 @@ public class TokenTfaService implements TokentfaApiDelegate {
                     answer2 = tfa.getAnswer().equalsIgnoreCase(TokenService.TOKEN_CUSTOM_ANSWER_2);
                 }
                 if (answer1 && answer2) {
+                    log.info("Got correct answers for custom token '" + id + "'");
                     return new ResponseEntity<String>(JWTUtil.generateJwt(id), HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        else {
-            // return unauthorized for everything else!
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        //return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        log.error("Got wrong tfaAnswers.");
+
+        // return unauthorized for everything else!
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
 }
