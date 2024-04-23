@@ -8,48 +8,48 @@ info:
 servers:
   - url: /dlx/v1
     description: Demo server
-    
+
 paths:
   /api_info:
-    description: Provides information on version and implemented capabilities of the api.
+    description: Provides information on version and implemented capabilities of the API.
     get:
       responses:
         "200":
-          description: A JSON string representing information about the api.
+          description: A JSON string representing information about the API.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/apiInfo'
 
   /token/{id}:
-    description: The initial call which accepts only the token (e.g. from a qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DLX-API is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DLX-API should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{id}) .
+    description: The initial call which accepts only the token (e.g. from a link or qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DICOM-LINK-EXCHANGE is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DICOM-LINK-EXCHANGE should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{id}) .
     get:
       parameters:
         - in: header
           name: X-DICOM-LINK-EXCHANGE # optional, and used to activate the DLX API functionality
           schema: 
-            type: string # header must exist but will not be evaluated
+            type: string # header must exist but value will not be evaluated
         - in: path
           name: id
-          description: Token id which identifies the download package, e.g. an alpha numerical code like 'ajk3d-238SD-sJJD1'.
+          description: Token id which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
           required: true
           schema:
             type: string 
       responses:
         "200":
-          description: Returns the 2FA questions in JSON format. If the token id does not exist, a default question scheme is returned, e.g. to query the date of birth.
+          description: Returns the 2FA questions in JSON format. If the token id does not exist, a default question scheme is returned, e.g. to query the date of birth, which will never yield a positiv result.
           content:
             application/json:
-                schema:
-                    $ref: '#/components/schemas/tfaQuestions'
-          
+              schema:
+                $ref: '#/components/schemas/tfaQuestions'
+
   /tokentfa/{id}:
     description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their questionId. 
     post:
       parameters:
         - in: path
           name: id
-          description: Token which identifies the download package, e.g. an alpha numerical code like 'ajk3d-238SD-sJJD1'.
+          description: Token which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
           required: true
           schema:
             type: string
@@ -87,7 +87,7 @@ paths:
           $ref: '#/components/responses/invalidCredentials'
 
   /download/{id}:
-    description: Downloads the data item for the given id with the specified mimeType.
+    description: Returns the data item for the given id with the specified mimeType.
     get:
       security:
         - bearerAuth: []
@@ -100,7 +100,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Returns the referenced file of the data item as binary stream with the specified mimeType (e.g. application/pdf). If the data item contains multiple files resp. a DICOM study, a zip file stream is returned. DICOM studies MUST always conform to IHE PDI in zip format.
+          description: Returns the referenced data item as binary stream with the specified mimeType (e.g. application/pdf). If the data item contains multiple files resp. a DICOM study, a zip file stream is returned. DICOM studies MUST always conform to IHE PDI in zip format.
           content:
             application/octet-stream:
               schema:
@@ -114,13 +114,13 @@ paths:
           $ref: '#/components/responses/comebackLater'
 
   /downloadall:
-    description: Downloads all data items as zip container in IHE PDI format.
+    description: Returns all data items as zip container in IHE PDI format.
     get:
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: Returns all files of all data items in a zip file stream. The download MUST conform to the IHE PID in zip format.
+          description: Returns all data items in a zip file stream. The download MUST conform to the IHE PID in zip format.
           content:
             application/zip:
               schema:
@@ -140,87 +140,107 @@ components:
 
   schemas:
     apiInfo:
-        description: General information about the api and version.
-        type: object
-        required:
-          - dlxVersion
-          - apiBasePath
-        properties:
-            dlxVersion:
-                type: string
-            vendorInformation:
-                type: string
-            apiBasePath:
-                type: string
-        example:
-            dlxVersion: v1
-            vendorInformation: DLX Company Ltd.
-            apiBasePath: https://example.com/portal/dlx/v1
+      description: General information about the api and version.
+      type: object
+      required:
+        - dlxVersion
+        - apiBasePath
+      properties:
+          dlxVersion:
+              type: string
+          vendorInformation:
+              type: string
+          apiBasePath:
+              type: string
+      example:
+          dlxVersion: v1
+          vendorInformation: DLX Company Ltd.
+          apiBasePath: https://example.com/portal/dlx/v1
 
     tfaQuestions:
-        description: Information about the api and list of tfa questions.
-        type: object
-        properties: 
-            apiInfo:
-                type: array
-                items:
-                    $ref: '#/components/schemas/apiInfo'
-            tfaQuestion:
-                type: array
-                items:
-                    $ref: '#/components/schemas/tfaQuestion'
+      description: Information about the api and list of tfa questions.
+      type: object
+      properties: 
+        apiInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/apiInfo'
+        tfaQuestion:
+          type: array
+          items:
+            $ref: '#/components/schemas/tfaQuestion'
 
     tfaQuestion:
         description: Tfa question, which must be answered by the user or an automatic system.
         type: object
         properties:
-            question:
-                type: string
-            questionId:
-                type: string
-            questionType:
-                type: string
-                enum: [PAT_BIRTH_DATE, STUDY_DATE, PASSWORD, CUSTOM]
-                description: |
-                    Format:
-                    * `PAT_BIRTH_DATE` - e.g. date from dicom: Patient's Birth Date (0010,0030)
-                    * `STUDY_DATE` - e.g. date from dicom: Study Date (0008,0020)
-                    * `PASSWORD` - e.g. an OTP oder TOTP as string
-                    * `CUSTOM` - any custom value which is not specified above
-            answerFormat:
-                type: string
-                enum: [DATE, STRING]
-                description: |
-                    Format:
-                    * `DATE` - date formated as YYYYMMDD
-                    * `STRING` - arbitrary string
-        example:
-            question: Wann haben Sie Geburtstag?
-            questionId: 1
-            questionType: PAT_BIRTH_DATE
-            answerFormat: DATE
-    
-    tfaAnswers:
-        description: List of tfa answers.
-        type: object
-        properties: 
-            tfaAnswer:
-                type: array
-                items:
-                    $ref: '#/components/schemas/tfaAnswer'
-
-    tfaAnswer:
-        description: Tfa answer, referenced by it's id.
-        type: object
-        properties:
+          question:
+            type: array
+            items:
+              $ref: '#/components/schemas/question'
           questionId:
             type: string
-          answer:
+          questionType:
             type: string
+            enum: [PAT_BIRTH_DATE, STUDY_DATE, PASSWORD, CUSTOM]
+            description: |
+              Format:
+              * `PAT_BIRTH_DATE` - e.g. date from DICOM: Patient's Birth Date (0010,0030)
+              * `STUDY_DATE` - e.g. date from DICOM: Study Date (0008,0020)
+              * `PASSWORD` - e.g. an OTP oder TOTP as string
+              * `CUSTOM` - any custom value which is not specified above
+          answerFormat:
+            type: string
+            enum: [DATE, STRING]
+            description: |
+              Format:
+              * `DATE` - date formated as YYYYMMDD
+              * `STRING` - arbitrary string
         example:
-            questionId: 1
-            answer: 19700101
-              
+          question: [{text: "Wann haben Sie Geburtstag?",language: "de"}, {text: "When is your birthdate?",language: "en"}]
+          questionId: 1
+          questionType: PAT_BIRTH_DATE
+          answerFormat: DATE
+
+    question:
+      description: Question, which is localizable (ISO 639).
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string 
+        language:
+          type: string # Language as ISO 639 language code (e.g. 'de', 'en' etc.)
+      example:
+        - text: Wann haben Sie Geburtstag?
+          language: de
+        - text: When is your birthdate?
+          language: en
+
+    tfaAnswers:
+      description: List of tfa answers.
+      type: object
+      properties: 
+        tfaAnswer:
+          type: array
+          items:
+            $ref: '#/components/schemas/tfaAnswer'
+
+    tfaAnswer:
+      description: Tfa answer, referenced by it's id.
+      type: object
+      properties:
+        questionId:
+          type: string
+        answer:
+          type: string
+      example:
+        - questionId: 1
+          answer: 19700101
+        - questionId: 2
+          answer: Dr. Bob
+
     dataItems:
       description: List of data items.
       type: object
@@ -238,28 +258,46 @@ components:
         - mimeType
         - description
       properties:
-        id:                
+        id:
           type: string
         mimeType:           # application/dicom, application/pdf, ...
           type: string
-        description:        # dicom: studyDescription (0008,1030)
+        description:        # DICOM: studyDescription (0008,1030)
           type: string
-        studyInstanceUID:   # dicom: studyInstanceUID (0020,000D)
+        studyInstanceUID:   # DICOM: studyInstanceUID (0020,000D)
           type: string
-        date:               # dicom: studyDate (0008,0020)
+        date:               # DICOM: studyDate (0008,0020)
           type: string
-          format: date   
-        modalities:         # dicom: modality (0008,0060) resp. modalities​InStudy (0008,0061)
-          type: string  
-        patientsName:       # dicom: patientsName (0010,0010)
+          format: date
+        modalities:         # DICOM: modality (0008,0060) resp. modalities​InStudy (0008,0061)
           type: string
-        patientsBirthdate:  # dicom: patientsBirthdate (0010,0030)
+        patientsName:       # DICOM: patientsName (0010,0010)
+          type: string
+        patientsBirthdate:  # DICOM: patientsBirthdate (0010,0030)
           type: string 
           format: date
-        patientsSex:        # dicom: patientsSex (0010,0040)
+        patientsSex:        # DICOM: patientsSex (0010,0040)
           type: string
         fileCount:          # number of files in a zip container
-          type: integer 
+          type: integer
+      example:
+        - id: ee26fd29-fdcb-469d-a4f7-7c6de8607f71
+          mimeType: application/pdf
+          description: Radiological report
+          date: 20240419
+          patientsName: Mustermann,Max
+          patientsBirthdate: 19700101
+          patientsSex: M
+        - id: 2de7773a-09df-46f1-98fb-9eeaaaeba802
+          mimeType: application/zip
+          description: DICOM Study as zip file
+          studyInstanceUID: 1.2.276.0.23.60.1.2.14841915742092284318.1713520221786.0
+          date: 20240419
+          modalities: OT
+          patientsName: Mustermann,Max
+          patientsBirthdate: 19700101
+          patientsSex: M
+          fileCount: 3
 
     comebackLaterResponse:
       type: object
