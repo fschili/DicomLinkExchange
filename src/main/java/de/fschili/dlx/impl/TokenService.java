@@ -45,7 +45,9 @@ public class TokenService implements TokenApiDelegate {
     public static final String TOKEN_CUSTOM_QUESTION_2_EN = "What is the name of your attending physician?";
     public static final String TOKEN_CUSTOM_ANSWER_2 = "Dr. Mayer";
 
-    public static final String TOKEN_QUESTION_401 = "Wann haben Sie Geburtstag?";
+    public static final String TOKEN_QUESTION_401 = TOKEN_BIRTHDATE_QUESTION;
+    public static final String TOKEN_QUESTION_401_EN = TOKEN_BIRTHDATE_QUESTION_EN;
+    public static final String TOKEN_QUESTION_401_FR = TOKEN_BIRTHDATE_QUESTION_FR;
 
     public static final Set<String> AVAILABLE_TOKENS = Stream.of(TOKEN_BIRTHDATE, TOKEN_PASSWORD, TOKEN_CUSTOM)
             .collect(Collectors.toCollection(HashSet::new));
@@ -151,7 +153,16 @@ public class TokenService implements TokenApiDelegate {
             TfaQuestion question = new TfaQuestion();
 
             Question itemDE = new Question(TOKEN_QUESTION_401);
+            itemDE.setLanguage("de");
             question.addQuestionItem(itemDE);
+
+            Question itemEN = new Question(TOKEN_QUESTION_401_EN);
+            itemDE.setLanguage("en");
+            question.addQuestionItem(itemEN);
+
+            Question itemFR = new Question(TOKEN_QUESTION_401_FR);
+            itemFR.setLanguage("fr");
+            question.addQuestionItem(itemFR);
 
             question.setQuestionId("1");
             question.setQuestionType(QuestionTypeEnum.PAT_BIRTH_DATE);
