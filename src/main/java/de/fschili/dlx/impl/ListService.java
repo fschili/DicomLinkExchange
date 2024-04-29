@@ -30,7 +30,7 @@ public class ListService implements ListApiDelegate {
     public static final String ZIP_UUID = "2de7773a-09df-46f1-98fb-9eeaaaeba802";
     public static final String ZIP_MIME_TYPE = "application/zip";
     public static final String ZIP_DESCRIPTION = "DICOM Study as zip file";
-    public static final String ZIP_FILENAME = "study_overview.jpg";
+    public static final String ZIP_FILENAME = "patcd.zip";
 
     public static final String STUDY_INSTANCE_UID = "1.2.276.0.23.60.1.2.14841915742092284318.1713520221786.0";
 
