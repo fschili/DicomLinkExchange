@@ -60,22 +60,22 @@ public class TokenService implements TokenApiDelegate {
     }
 
     @Override
-    public ResponseEntity<TfaQuestions> tokenIdGet(String id, String X_DICOM_LINK_EXCHANGE) {
-        log.debug("Got token request for: " + id + " (DLX API: " + X_DICOM_LINK_EXCHANGE + ")");
+    public ResponseEntity<TfaQuestions> tokenValueGet(String value, String X_DICOM_LINK_EXCHANGE) {
+        log.debug("Got token request for: " + value + " (DLX API: " + X_DICOM_LINK_EXCHANGE + ")");
 
         if (X_DICOM_LINK_EXCHANGE == null || X_DICOM_LINK_EXCHANGE.isEmpty()) {
             log.info("X_DICOM_LINK_EXCHANGE flag is not set. Returning normal portal page without DLX functionality. But continue in DEMO mode..");
         }
 
-        if (!(isBirthdayToken(id) || isCustomToken(id))) {
-            log.warn("Token '" + id + "' is not valide or known! Will retrun default question for security reasons.");
+        if (!(isBirthdayToken(value) || isCustomToken(value))) {
+            log.warn("Token '" + value + "' is not valide or known! Will retrun default question for security reasons.");
         }
 
         TfaQuestions questions = new TfaQuestions();
         questions.addApiInfoItem(ApiInfoService.getApiInfo(getRequest()));
 
-        if (isBirthdayToken(id)) {
-            log.info("Return birthdate question for token '" + id + "'");
+        if (isBirthdayToken(value)) {
+            log.info("Return birthdate question for token '" + value + "'");
             TfaQuestion question = new TfaQuestion();
 
             Question itemDE = new Question(TOKEN_BIRTHDATE_QUESTION);
@@ -96,8 +96,8 @@ public class TokenService implements TokenApiDelegate {
 
             questions.addTfaQuestionItem(question);
         }
-        else if (isPasswordToken(id)) {
-            log.info("Return password question for token '" + id + "'");
+        else if (isPasswordToken(value)) {
+            log.info("Return password question for token '" + value + "'");
             TfaQuestion question = new TfaQuestion();
 
             Question itemDE = new Question(TOKEN_PASSWORD_QUESTION);
@@ -114,8 +114,8 @@ public class TokenService implements TokenApiDelegate {
 
             questions.addTfaQuestionItem(question);
         }
-        else if (isCustomToken(id)) {
-            log.info("Return custom questions for token '" + id + "'");
+        else if (isCustomToken(value)) {
+            log.info("Return custom questions for token '" + value + "'");
             TfaQuestion question = new TfaQuestion();
 
             Question itemDE = new Question(TOKEN_CUSTOM_QUESTION_1);
@@ -149,7 +149,7 @@ public class TokenService implements TokenApiDelegate {
             questions.addTfaQuestionItem(question2);
         }
         else {
-            log.info("Return DEFAULT birthdate question for token '" + id + "' (This will never get a correct answer!)");
+            log.info("Return DEFAULT birthdate question for token '" + value + "' (This will never get a correct answer!)");
             TfaQuestion question = new TfaQuestion();
 
             Question itemDE = new Question(TOKEN_QUESTION_401);
