@@ -49,7 +49,7 @@ paths:
       parameters:
         - in: path
           name: value
-          description: Token value which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
+          description: Token which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
           required: true
           schema:
             type: string
