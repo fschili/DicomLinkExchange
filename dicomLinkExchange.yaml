@@ -21,34 +21,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/apiInfo'
 
-  /token/{id}:
-    description: The initial call which accepts only the token (e.g. from a link or qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token id does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DICOM-LINK-EXCHANGE is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={id} with a HTTP header X-DICOM-LINK-EXCHANGE should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{id}) .
+  /token/{value}:
+    description: The initial call which accepts only the token (e.g. from a link or qr-code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token value does not actually exist. The feedback about failed or successful authentication will be presented by the subsequent /tokentfa/{id} endpoint. To enable the DLX functionalities the HTTP header parameter X-DICOM-LINK-EXCHANGE is required. This allowes pre-existing token-URLs to forward to this api endpoint (e.g. https://example.com/portal?token={value} with a HTTP header X-DICOM-LINK-EXCHANGE should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{value}) .
     get:
       parameters:
         - in: header
           name: X-DICOM-LINK-EXCHANGE # optional, and used to activate the DLX API functionality
           schema: 
             type: string # header must exist but value will not be evaluated
-        - in: path
-          name: id
-          description: Token id which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
+        - value: path
+          name: value
+          description: Token value which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
           required: true
           schema:
             type: string 
       responses:
         "200":
-          description: Returns the 2FA questions in JSON format. If the token id does not exist, a default question scheme is returned, e.g. to query the date of birth, which will never yield a positiv result.
+          description: Returns the 2FA questions in JSON format. If the token value does not exist, a default question scheme MUST be returned, e.g. to query the date of birth, which will never yield a positiv result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tfaQuestions'
 
-  /tokentfa/{id}:
+  /tokentfa/{value}:
     description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their questionId. 
     post:
       parameters:
         - in: path
-          name: id
+          name: value
           description: Token which identifies the download package, e.g. an alpha numerical code like 'A3D-HDH-83B'.
           required: true
           schema:
@@ -311,7 +311,7 @@ components:
 
   responses:
     invalidCredentials:
-      description: Ivalid credentials provided - use /token and /tokentfa before.
+      description: Invalid credentials provided - use /token and /tokentfa before.
 
     comebackLater:
       description: If the server is busy, a 503 status code means "please come back later".
