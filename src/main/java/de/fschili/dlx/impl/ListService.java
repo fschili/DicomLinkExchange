@@ -61,12 +61,14 @@ public class ListService implements ListApiDelegate {
     private static DataItem getReportItem() {
         DataItem dataItem = new DataItem(PDF_UUID, PDF_MIME_TYPE, PDF_DESCRIPTION);
         addMetaData(dataItem);
+        dataItem.setFileCount(1);
         return dataItem;
     }
 
     private static DataItem getImageItem() {
         DataItem dataItem = new DataItem(JPEG_UUID, JPEG_MIME_TYPE, JPEG_DESCRIPTION);
         addMetaData(dataItem);
+        dataItem.setFileCount(1);
         return dataItem;
     }
 

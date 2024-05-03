@@ -27,8 +27,8 @@ public class TokenService implements TokenApiDelegate {
     private final static Logger log = LoggerFactory.getLogger(TokenApiDelegate.class);
 
     public static final String TOKEN_BIRTHDATE = "ABC-S1Z-98A";
-    public static final String TOKEN_BIRTHDATE_QUESTION = "Wann haben Sie Geburtstag?";
-    public static final String TOKEN_BIRTHDATE_QUESTION_EN = "When is your birthdate?";
+    public static final String TOKEN_BIRTHDATE_QUESTION = "Wann ist Ihr Geburtsdatum?";
+    public static final String TOKEN_BIRTHDATE_QUESTION_EN = "What is your date of birth?";
     public static final String TOKEN_BIRTHDATE_QUESTION_FR = "C'est quand votre anniversaire?";
     public static final String TOKEN_BIRTHDATE_ANSWER = "19700101";
 
@@ -38,7 +38,7 @@ public class TokenService implements TokenApiDelegate {
     public static final String TOKEN_PASSWORD_ANSWER = "132-238-252";
 
     public static final String TOKEN_CUSTOM = "HDF-34F-HK6";
-    public static final String TOKEN_CUSTOM_QUESTION_1 = "Wann war ihre Untersuchung?";
+    public static final String TOKEN_CUSTOM_QUESTION_1 = "Wann war Ihre Untersuchung?";
     public static final String TOKEN_CUSTOM_QUESTION_1_EN = "When was your examination?";
     public static final String TOKEN_CUSTOM_ANSWER_1 = "20240419";
     public static final String TOKEN_CUSTOM_QUESTION_2 = "Wie heißt Ihr behandelnder Arzt?";
