@@ -22,7 +22,7 @@ paths:
                 $ref: '#/components/schemas/apiInfo'
 
   /token/{value}:
-    description: The initial call which accepts only the token (e.g. from a link or QR code) and responds with the 2FA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token value does not actually exist. The feedback on failed or successful authentication is provided by the subsequent /tokentfa/{value} endpoint. To enable the DLX functionalities the HTTP header parameter X-DICOM-LINK-EXCHANGE is required. This allowes pre-existing token URLs to forward to this API endpoint (e.g. https://example.com/portal?token={value} with a HTTP header X-DICOM-LINK-EXCHANGE should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{value}) .
+    description: The initial call which accepts only the token (e.g. from a link or QR code) and responds with the TFA questions for the calling system to generate a JWT for all further requests. To enhance security, this call always returns successfully, even if the token value does not actually exist. The feedback on failed or successful authentication is provided by the subsequent /tokentfa/{value} endpoint. To enable the DLX functionalities the HTTP header parameter X-DICOM-LINK-EXCHANGE is required. This allowes pre-existing token URLs to forward to this API endpoint (e.g. https://example.com/portal?token={value} with a HTTP header X-DICOM-LINK-EXCHANGE should return the same result as the defined DLX endpoint https://example.com/dlx/v1/token/{value}) .
     get:
       parameters:
         - in: header
@@ -37,14 +37,14 @@ paths:
             type: string 
       responses:
         "200":
-          description: Returns the TFA questions in JSON format. If the token value does not exist, a default question scheme MUST be returned, e.g. to query the date of birth, which always returns a negative result.
+          description: Returns the two-factor authentification (TFA) questions in JSON format. If the token value does not exist, a default question scheme MUST be returned, e.g. to query the date of birth, which always returns a negative result.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tfaQuestions'
 
   /tokentfa/{value}:
-    description: Request to answer the 2FA questions from the initial token call. The questions and answers are mapped by their questionId. 
+    description: Request to answer the TFA questions from the initial token call. The questions and answers are mapped by their questionId. 
     post:
       parameters:
         - in: path
