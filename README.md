@@ -76,3 +76,15 @@ Konfiguration can be made at
 The documentation can be browsed at 
 
     http://localhost:3000/swagger-ui/index.html
+
+## Docker
+
+The demo server can be built and started as a Docker container.
+
+### Building
+
+    docker compose build
+
+### Starting
+
+    docker compose up -d

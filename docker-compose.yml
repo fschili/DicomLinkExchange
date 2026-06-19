@@ -1,0 +1,7 @@
+services:
+  dlx-server:
+    build: .
+    container_name: dicom-link-exchange
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
