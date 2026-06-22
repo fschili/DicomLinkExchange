@@ -162,7 +162,6 @@ paths:
         "5XX":
           $ref: '#/components/responses/unexpectedError'
 
-  # --- Proposal: Link Creation ---
   /admin_auth:
     description: |
       Endpoint to authenticate with administrative credentials (e.g. for DLX-Tokens or DLX-Import operations) and receive a JWT for bearer authentication in subsequent requests. The JWT must contain the appropriate scopes (dlx.tokens or dlx.import) to access the respective endpoints.
@@ -524,7 +523,6 @@ components:
         
         When using /tokens endpoints with bearerAuth, the JWT must contain `dlx.derive` scope.
 
-    # --- Proposal: Link Creation ---
     adminBearerAuth:
       type: http
       scheme: bearer
@@ -536,7 +534,6 @@ components:
         * `dlx.tokens`  - Create and manage DLX token links (DLX-Tokens endpoints)
         * `dlx.import` - Import data from external DLX links (DLX-Import endpoints)
 
-  # --- Proposal: Capabilities ---
   schemas:
     adminAuthRequest:
       type: object
@@ -828,7 +825,6 @@ components:
       example:
         timeOutInSeconds: 30
 
-    # --- Proposal: Link Creation ---
     tfaInfo:
       description: Information about the API and list of all tfa questions.
       type: object
@@ -934,7 +930,6 @@ components:
               patientsBirthdate: "19700101"
               patientsSex: M
 
-    # --- Proposal: Pagination ---
     paginatedTokensResponse:
       description: |
         Paginated list of DLX token links. Pagination follows RFC 8288 (Web Linking) semantics.
